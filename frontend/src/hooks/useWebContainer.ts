@@ -3,21 +3,14 @@ import { WebContainer } from '@webcontainer/api';
 
 export function useWebContainer() {
     const [webcontainer, setWebcontainer] = useState<WebContainer>();
-    const [error, setError] = useState<string | null>(null);
 
+    async function main() {
+        const webcontainerInstance = await WebContainer.boot();
+        setWebcontainer(webcontainerInstance)
+    }
     useEffect(() => {
-        async function main() {
-            try {
-                const webcontainerInstance = await WebContainer.boot();
-                setWebcontainer(webcontainerInstance);
-            } catch (err) {
-                console.error("WebContainer boot error:", err);
-                setError(err instanceof Error ? err.message : String(err));
-            }
-        }
-
         main();
-    }, []);
+    }, [])
 
-    return { webcontainer, error };
+    return webcontainer;
 }
