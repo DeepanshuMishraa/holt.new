@@ -1,5 +1,5 @@
 import { WebContainer } from '@webcontainer/api';
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 
 interface PreviewFrameProps {
   files: any[];
@@ -7,8 +7,7 @@ interface PreviewFrameProps {
 }
 
 export function PreviewFrame({ files, webContainer }: PreviewFrameProps) {
-  // In a real implementation, this would compile and render the preview
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState("https://holt-new.vercel.app/");
 
   async function main() {
     const installProcess = await webContainer.spawn('npm', ['install']);
