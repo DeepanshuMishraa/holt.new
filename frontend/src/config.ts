@@ -1,1 +1,1 @@
-export const BACKEND_URL = process.env.BACKEND_URL as string 
+export const BACKEND_URL = "https://holt-new.onrender.com"

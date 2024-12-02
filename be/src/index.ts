@@ -12,7 +12,9 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin:"*"
+}));
 app.use(express.json());
 
 app.post("/template", async (req, res) => {
