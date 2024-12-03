@@ -1,8 +1,13 @@
 import { WebContainer } from "@webcontainer/api";
 import { useEffect, useState } from "react";
 
+interface FileEntry {
+  path: string;
+  contents: string;
+}
+
 interface PreviewFrameProps {
-  files: any[];
+  files: FileEntry[];
   webContainer?: WebContainer;
 }
 
@@ -23,11 +28,16 @@ export function PreviewFrame({ files, webContainer }: PreviewFrameProps) {
 
         // Ensure files are added before installation
         if (files && files.length > 0) {
-          await Promise.all(
-            files.map(async (file) => {
-              await webContainer.fs.writeFile(file.path, file.contents);
-            })
-          );
+          for (const file of files) {
+            // Use mkdir -p for nested directories
+            const dirPath = file.path.split('/').slice(0, -1).join('/');
+            if (dirPath) {
+              await webContainer.fs.mkdir(dirPath, { recursive: true });
+            }
+
+            // Write the file
+            await webContainer.fs.writeFile(file.path, file.contents);
+          }
         }
 
         setIsLoading(true);
@@ -35,14 +45,9 @@ export function PreviewFrame({ files, webContainer }: PreviewFrameProps) {
         // Install dependencies
         const installProcess = await webContainer.spawn("npm", ["install"]);
 
-        // Optional: Handle install output
-        installProcess.output.pipeTo(
-          new WritableStream({
-            write(data) {
-              console.log(data);
-            },
-          })
-        );
+        // Handle install output
+        const installOutput = await new Response(installProcess.output).text();
+        console.log("Install output:", installOutput);
 
         // Wait for install to complete
         await installProcess.exit;
@@ -58,19 +63,13 @@ export function PreviewFrame({ files, webContainer }: PreviewFrameProps) {
           setIsLoading(false);
         });
 
-        // Optional: Handle dev process output
-        devProcess.output.pipeTo(
-          new WritableStream({
-            write(data) {
-              console.log(data);
-            },
-          })
-        );
+        // Handle dev process output
+        const devOutput = await new Response(devProcess.output).text();
+        console.log("Dev server output:", devOutput);
+
       } catch (err) {
         console.error("Error in WebContainer setup:", err);
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
         setIsLoading(false);
       }
     }
@@ -104,4 +103,3 @@ export function PreviewFrame({ files, webContainer }: PreviewFrameProps) {
     </div>
   );
 }
-
