@@ -2,15 +2,30 @@ import { useEffect, useState } from "react";
 import { WebContainer } from '@webcontainer/api';
 
 export function useWebContainer() {
-    const [webcontainer, setWebcontainer] = useState<WebContainer>();
+    const [webContainer, setWebContainer] = useState<WebContainer>();
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    async function main() {
-        const webcontainerInstance = await WebContainer.boot();
-        setWebcontainer(webcontainerInstance)
-    }
     useEffect(() => {
-        main();
-    }, [])
+        async function initWebContainer() {
+            try {
+                setIsLoading(true);
+                const webContainerInstance = await WebContainer.boot();
+                setWebContainer(webContainerInstance);
+            } catch (err) {
+                console.error("Failed to initialize WebContainer:", err);
+                setError(err instanceof Error ? err.message : "Failed to boot WebContainer");
+            } finally {
+                setIsLoading(false);
+            }
+        }
 
-    return webcontainer;
+        initWebContainer();
+    }, []);
+
+    return {
+        webContainer,
+        isLoading,
+        error
+    };
 }
